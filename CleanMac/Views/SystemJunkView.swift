@@ -17,11 +17,11 @@ struct SystemJunkView: View {
                 emptyStateView
             } else {
                 categoryListView
+                
+                Divider()
+                
+                footerView
             }
-            
-            Divider()
-            
-            footerView
         }
         .background(VisualEffectBlur(material: .contentBackground, blendingMode: .behindWindow))
         .alert("Clean System Junk?", isPresented: $showCleanConfirmation) {
@@ -59,20 +59,25 @@ struct SystemJunkView: View {
                 GroupBox {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Total Junk Found")
+                            Text("Selected Junk")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Text(junkCleaner.formattedTotalSize)
-                                .font(.title)
-                                .fontWeight(.bold)
+                                .font(.title2)
+                                .fontWeight(.semibold)
                                 .foregroundStyle(.orange)
                         }
                         
                         Spacer()
                         
-                        Text("\(junkCleaner.categories.count) categories")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        VStack(alignment: .trailing, spacing: 4) {
+                            Text("\(junkCleaner.categories.count) categories")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text("\(junkCleaner.categories.reduce(0) { $0 + $1.items.count }) items")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                     .padding(.vertical, 4)
                 }
@@ -93,21 +98,57 @@ struct SystemJunkView: View {
     private var emptyStateView: some View {
         Group {
             if #available(macOS 14.0, *) {
-                ContentUnavailableView("No Junk Found", systemImage: "sparkles", description: Text("Click Scan to search for system junk files."))
+                ContentUnavailableView {
+                    Label("No Junk Found", systemImage: "sparkles")
+                } description: {
+                    Text("Run a scan to find system junk files.")
+                } actions: {
+                    Button {
+                        Task {
+                            await junkCleaner.scan()
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                            Text("Scan")
+                        }
+                        .frame(width: 220)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .keyboardShortcut("r", modifiers: [.command])
+                    .disabled(junkCleaner.isScanning || junkCleaner.isCleaning)
+                }
             } else {
-                VStack(spacing: 16) {
+                VStack(spacing: 12) {
                     Image(systemName: "sparkles")
-                        .font(.system(size: 48))
-                        .foregroundStyle(.green)
+                        .font(.system(size: 44))
+                        .foregroundStyle(.secondary)
                     
                     Text("No Junk Found")
                         .font(.title3)
                         .fontWeight(.medium)
                     
-                    Text("Click Scan to search for system junk files")
+                    Text("Run a scan to find system junk files.")
                         .font(.body)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
+                    
+                    Button {
+                        Task {
+                            await junkCleaner.scan()
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                            Text("Scan")
+                        }
+                        .frame(width: 220)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .keyboardShortcut("r", modifiers: [.command])
+                    .disabled(junkCleaner.isScanning || junkCleaner.isCleaning)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.vertical, 24)
@@ -140,7 +181,8 @@ struct SystemJunkView: View {
                     )
                 }
             }
-            .padding()
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
         }
     }
     
@@ -159,27 +201,32 @@ struct SystemJunkView: View {
             }
             .buttonStyle(.bordered)
             .controlSize(.large)
+            .keyboardShortcut("r", modifiers: [.command])
             .disabled(junkCleaner.isScanning || junkCleaner.isCleaning)
             
-            Button {
-                showCleanConfirmation = true
-            } label: {
-                HStack {
-                    if junkCleaner.isCleaning {
-                        ProgressView()
-                            .scaleEffect(0.7)
-                    } else {
-                        Image(systemName: "trash.fill")
+            if !junkCleaner.categories.isEmpty {
+                Button {
+                    showCleanConfirmation = true
+                } label: {
+                    HStack {
+                        if junkCleaner.isCleaning {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                        } else {
+                            Image(systemName: "trash.fill")
+                        }
+                        Text("Clean")
                     }
-                    Text("Clean")
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
+                .buttonStyle(.borderedProminent)
+                .tint(.orange)
+                .controlSize(.large)
+                .keyboardShortcut(.defaultAction)
+                .disabled(junkCleaner.categories.isEmpty || junkCleaner.isScanning || junkCleaner.isCleaning || junkCleaner.totalSelectedSize == 0)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.orange)
-            .controlSize(.large)
-            .disabled(junkCleaner.categories.isEmpty || junkCleaner.isScanning || junkCleaner.isCleaning || junkCleaner.totalSelectedSize == 0)
         }
+        .frame(maxWidth: .infinity)
         .padding()
     }
 }
@@ -219,9 +266,13 @@ struct CategoryRowView: View {
                 
                 Spacer()
                 
+                Text("\(category.items.count) items")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
                 Text(category.formattedSize)
-                    .font(.body)
-                    .fontWeight(.medium)
+                    .font(.headline)
+                    .fontWeight(.semibold)
                     .foregroundStyle(.orange)
                 
                 Button {
@@ -234,7 +285,8 @@ struct CategoryRowView: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(12)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
             .contentShape(Rectangle())
             .onTapGesture {
                 onToggleExpand()
@@ -242,7 +294,7 @@ struct CategoryRowView: View {
             
             if isExpanded && !category.items.isEmpty {
                 Divider()
-                    .padding(.leading, 48)
+                    .padding(.leading, 52)
                 
                 VStack(spacing: 0) {
                     ForEach(category.items.prefix(20)) { item in
@@ -253,7 +305,7 @@ struct CategoryRowView: View {
                         
                         if item.id != category.items.prefix(20).last?.id {
                             Divider()
-                                .padding(.leading, 48)
+                                .padding(.leading, 52)
                         }
                     }
                     
@@ -264,15 +316,16 @@ struct CategoryRowView: View {
                             .padding(.vertical, 8)
                     }
                 }
+                .padding(.bottom, 8)
             }
         }
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 14)
                 .fill(.ultraThinMaterial)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(Color.secondary.opacity(0.1))
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(Color.secondary.opacity(0.12))
         )
     }
 }
@@ -280,6 +333,7 @@ struct CategoryRowView: View {
 struct JunkItemRowView: View {
     let item: JunkItem
     let onToggle: () -> Void
+    @State private var isHovered = false
     
     var body: some View {
         HStack(spacing: 12) {
@@ -297,10 +351,17 @@ struct JunkItemRowView: View {
                 .font(.callout)
                 .foregroundStyle(.secondary)
             
-            Text(item.name)
-                .font(.callout)
-                .lineLimit(1)
-                .truncationMode(.middle)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.name)
+                    .font(.callout)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                Text(item.path.path)
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
             
             Spacer()
             
@@ -310,6 +371,14 @@ struct JunkItemRowView: View {
         }
         .padding(.vertical, 8)
         .padding(.trailing, 12)
+        .contentShape(Rectangle())
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(isHovered ? Color.secondary.opacity(0.08) : Color.clear)
+        )
+        .onHover { hovering in
+            isHovered = hovering
+        }
     }
 }
 

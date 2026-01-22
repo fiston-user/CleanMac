@@ -164,20 +164,21 @@ struct SystemJunkSidebarView: View {
             } else if junkCleaner.categories.isEmpty {
                 Group {
                     if #available(macOS 14.0, *) {
-                        ContentUnavailableView("No Scan Results", systemImage: "magnifyingglass", description: Text("Run a scan to find system junk files."))
+                        ContentUnavailableView("Run a Scan", systemImage: "magnifyingglass", description: Text("No results yet."))
                     } else {
-                        VStack(spacing: 8) {
+                        VStack(spacing: 6) {
                             Image(systemName: "magnifyingglass")
-                                .font(.system(size: 36))
+                                .font(.system(size: 28))
                                 .foregroundStyle(.secondary)
-                            Text("No Scan Results")
-                                .font(.headline)
-                            Text("Run a scan to find system junk files.")
-                                .font(.caption)
+                            Text("Run a Scan")
+                                .font(.callout)
+                                .fontWeight(.medium)
+                            Text("No results yet.")
+                                .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .padding(.vertical, 24)
+                        .padding(.vertical, 16)
                     }
                 }
             } else {

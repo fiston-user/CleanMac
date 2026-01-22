@@ -88,28 +88,27 @@ struct AppDetailView: View {
                     Spacer()
                     
                     if !app.relatedFiles.isEmpty {
-                        Button("Select All") {
-                            for index in app.relatedFiles.indices {
-                                if !app.relatedFiles[index].isSelected {
-                                    appManager.toggleFileSelection(at: index)
+                        HStack(spacing: 8) {
+                            Button("Select All") {
+                                for index in app.relatedFiles.indices {
+                                    if !app.relatedFiles[index].isSelected {
+                                        appManager.toggleFileSelection(at: index)
+                                    }
                                 }
                             }
-                        }
-                        .buttonStyle(.link)
-                        .font(.caption)
-                        
-                        Text("•")
-                            .foregroundStyle(.secondary)
-                        
-                        Button("Deselect All") {
-                            for index in app.relatedFiles.indices {
-                                if app.relatedFiles[index].isSelected {
-                                    appManager.toggleFileSelection(at: index)
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                            
+                            Button("Deselect All") {
+                                for index in app.relatedFiles.indices {
+                                    if app.relatedFiles[index].isSelected {
+                                        appManager.toggleFileSelection(at: index)
+                                    }
                                 }
                             }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
                         }
-                        .buttonStyle(.link)
-                        .font(.caption)
                     }
                 }
                 .padding(.horizontal)
@@ -181,6 +180,8 @@ struct AppDetailView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.red)
+                .controlSize(.large)
+                .keyboardShortcut(.defaultAction)
                 .disabled(appManager.isDeleting)
             }
             .padding()
@@ -257,7 +258,7 @@ struct RelatedFileRow: View {
                 .font(.caption2)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
-                .background(.quaternary)
+                .background(Color.secondary.opacity(0.12))
                 .clipShape(Capsule())
             
             Text(file.formattedSize)
@@ -268,8 +269,12 @@ struct RelatedFileRow: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: 10)
                 .fill(isHovered ? Color.secondary.opacity(0.08) : (file.isSelected ? Color.accentColor.opacity(0.06) : Color.clear))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(Color.secondary.opacity(isHovered ? 0.2 : 0.08))
         )
         .contentShape(Rectangle())
     }
