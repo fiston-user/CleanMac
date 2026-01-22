@@ -162,7 +162,8 @@ struct SystemJunkSidebarView: View {
                     Spacer()
                 }
             } else if junkCleaner.categories.isEmpty {
-                Group {
+                VStack {
+                    Spacer()
                     if #available(macOS 14.0, *) {
                         ContentUnavailableView("Run a Scan", systemImage: "magnifyingglass", description: Text("No results yet."))
                     } else {
@@ -177,10 +178,10 @@ struct SystemJunkSidebarView: View {
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .padding(.vertical, 16)
                     }
+                    Spacer()
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List(junkCleaner.categories) { category in
                     JunkCategorySummaryRow(category: category)

@@ -96,7 +96,9 @@ struct SystemJunkView: View {
     }
     
     private var emptyStateView: some View {
-        Group {
+        VStack {
+            Spacer()
+            
             if #available(macOS 14.0, *) {
                 ContentUnavailableView {
                     Label("No Junk Found", systemImage: "sparkles")
@@ -150,10 +152,11 @@ struct SystemJunkView: View {
                     .keyboardShortcut("r", modifiers: [.command])
                     .disabled(junkCleaner.isScanning || junkCleaner.isCleaning)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.vertical, 24)
             }
+            
+            Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private var categoryListView: some View {
