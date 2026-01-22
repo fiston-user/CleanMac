@@ -45,45 +45,45 @@ struct SystemJunkView: View {
     }
     
     private var headerView: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Label("System Junk", systemImage: "trash.fill")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.orange)
-                
-                Spacer()
-            }
-            
+        Group {
             if !junkCleaner.categories.isEmpty && !junkCleaner.isScanning {
-                GroupBox {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Selected Junk")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Text(junkCleaner.formattedTotalSize)
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.orange)
-                        }
-                        
-                        Spacer()
-                        
-                        VStack(alignment: .trailing, spacing: 4) {
-                            Text("\(junkCleaner.categories.count) categories")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Text("\(junkCleaner.categories.reduce(0) { $0 + $1.items.count }) items")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                HStack(spacing: 16) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Total Junk")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(junkCleaner.formattedTotalSize)
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.orange)
                     }
-                    .padding(.vertical, 4)
+                    
+                    Divider()
+                        .frame(height: 40)
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Categories")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text("\(junkCleaner.categories.count)")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Items")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text("\(junkCleaner.categories.reduce(0) { $0 + $1.items.count })")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                    }
+                    
+                    Spacer()
                 }
+                .padding()
             }
         }
-        .padding()
     }
     
     private var scanningView: some View {
