@@ -31,6 +31,12 @@ A native macOS app for completely uninstalling applications and cleaning system 
 
 ## Installation
 
+### Download (DMG)
+
+Download the latest DMG from GitHub Releases:
+
+https://github.com/fiston-user/CleanMac/releases/latest
+
 1. Clone the repository:
    ```bash
    git clone https://github.com/fiston-user/CleanMac.git

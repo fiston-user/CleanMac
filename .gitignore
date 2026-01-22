@@ -32,3 +32,4 @@ Carthage/Build/
 *.ipa
 *.dSYM.zip
 *.dSYM
+*.dmg
