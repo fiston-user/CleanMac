@@ -9,6 +9,10 @@ struct AppDetailView: View {
         app.relatedFiles.filter { $0.isSelected }.reduce(0) { $0 + $1.size }
     }
     
+    var selectedFilesCount: Int {
+        app.relatedFiles.filter { $0.isSelected }.count
+    }
+    
     var body: some View {
         ZStack {
             mainContent
@@ -21,7 +25,7 @@ struct AppDetailView: View {
     
     private var deletingOverlay: some View {
         ZStack {
-            Color.black.opacity(0.3)
+            Color.black.opacity(0.4)
                 .ignoresSafeArea()
             
             VStack(spacing: 20) {
@@ -29,180 +33,220 @@ struct AppDetailView: View {
             }
             .padding(40)
             .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
         }
     }
     
     private var mainContent: some View {
         VStack(spacing: 0) {
-            // App Header
-            VStack(spacing: 16) {
-                HStack(spacing: 16) {
-                    Image(nsImage: app.icon)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 88, height: 88)
-                        .shadow(color: .black.opacity(0.08), radius: 10, y: 5)
-                    
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(app.name)
-                            .font(.title)
-                            .fontWeight(.semibold)
-                        
-                        Label(app.bundleIdentifier, systemImage: "app.badge")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                
-                // Size Stats
-                HStack(spacing: 12) {
-                    StatBox(title: "App Size", value: app.formattedSize, icon: "app.fill")
-                    StatBox(title: "Related Files", value: ByteCountFormatter.string(fromByteCount: selectedFilesSize, countStyle: .file), icon: "doc.fill")
-                    StatBox(title: "Total", value: ByteCountFormatter.string(fromByteCount: app.size + selectedFilesSize, countStyle: .file), icon: "chart.pie.fill", accent: true)
-                }
-            }
-            .padding(.vertical, 20)
-            .padding(.horizontal, 20)
-            .frame(maxWidth: .infinity)
-            .background(
-                LinearGradient(
-                    colors: [.clear, Color.accentColor.opacity(0.06)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
-            
-            Divider()
-            
-            // Related Files Section
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text("Related Files")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                    
-                    Spacer()
+            ScrollView {
+                VStack(spacing: 20) {
+                    appHeaderCard
                     
                     if !app.relatedFiles.isEmpty {
-                        HStack(spacing: 8) {
-                            Button("Select All") {
-                                for index in app.relatedFiles.indices {
-                                    if !app.relatedFiles[index].isSelected {
-                                        appManager.toggleFileSelection(at: index)
-                                    }
-                                }
-                            }
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
-                            
-                            Button("Deselect All") {
-                                for index in app.relatedFiles.indices {
-                                    if app.relatedFiles[index].isSelected {
-                                        appManager.toggleFileSelection(at: index)
-                                    }
-                                }
-                            }
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
-                        }
+                        relatedFilesSection
+                    } else {
+                        noFilesCard
                     }
                 }
-                .padding(.horizontal)
-                .padding(.top, 16)
-                
-                if app.relatedFiles.isEmpty {
-                    VStack(spacing: 8) {
-                        Image(systemName: "checkmark.circle")
-                            .font(.largeTitle)
-                            .foregroundStyle(.green)
-                        Text("No additional files found")
-                            .font(.body)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    List {
-                        ForEach(Array(app.relatedFiles.enumerated()), id: \.element.id) { index, file in
-                            RelatedFileRow(file: file, isHovered: hoveredFileId == file.id)
-                                .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
-                                .listRowSeparator(.hidden)
-                                .listRowBackground(Color.clear)
-                                .onTapGesture {
-                                    withAnimation(.easeInOut(duration: 0.1)) {
-                                        appManager.toggleFileSelection(at: index)
-                                    }
-                                }
-                                .onHover { hovering in
-                                    hoveredFileId = hovering ? file.id : nil
-                                }
-                        }
-                    }
-                    .listStyle(.inset)
-                    .scrollContentBackground(.hidden)
-                }
+                .padding(16)
             }
             
-            Divider()
-            
-            // Delete Button
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Ready to clean")
+            footerBar
+        }
+    }
+    
+    private var appHeaderCard: some View {
+        VStack(spacing: 20) {
+            HStack(spacing: 20) {
+                Image(nsImage: app.icon)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 80, height: 80)
+                    .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(app.name)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Text(app.bundleIdentifier)
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
                     
-                    let selectedCount = app.relatedFiles.filter { $0.isSelected }.count
-                    Text("App + \(selectedCount) files")
+                    Text(app.path.path)
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
+                        .lineLimit(1)
                 }
+                
+                Spacer()
+            }
+            
+            HStack(spacing: 12) {
+                StatCard(
+                    icon: "app.fill",
+                    title: "App",
+                    value: app.formattedSize,
+                    color: .blue
+                )
+                
+                StatCard(
+                    icon: "doc.on.doc.fill",
+                    title: "Files",
+                    value: ByteCountFormatter.string(fromByteCount: selectedFilesSize, countStyle: .file),
+                    color: .orange
+                )
+                
+                StatCard(
+                    icon: "sum",
+                    title: "Total",
+                    value: ByteCountFormatter.string(fromByteCount: app.size + selectedFilesSize, countStyle: .file),
+                    color: .red
+                )
+            }
+        }
+        .padding(20)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(Color.primary.opacity(0.06))
+        )
+    }
+    
+    private var noFilesCard: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "checkmark.seal.fill")
+                .font(.system(size: 44))
+                .foregroundStyle(.green.gradient)
+            
+            Text("No Leftover Files")
+                .font(.headline)
+            
+            Text("This app doesn't have any related files to clean up.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 40)
+        .padding(.horizontal, 20)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(Color.primary.opacity(0.06))
+        )
+    }
+    
+    private var relatedFilesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Label("Related Files", systemImage: "folder.fill")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+                
+                Text("(\(selectedFilesCount)/\(app.relatedFiles.count))")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
                 
                 Spacer()
                 
                 Button {
-                    appManager.showDeleteConfirmation = true
-                } label: {
-                    HStack(spacing: 6) {
-                        if appManager.isDeleting {
-                            ProgressView()
-                                .scaleEffect(0.6)
-                        } else {
-                            Image(systemName: "trash")
+                    for index in app.relatedFiles.indices {
+                        if !app.relatedFiles[index].isSelected {
+                            appManager.toggleFileSelection(at: index)
                         }
-                        Text("Uninstall")
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
+                } label: {
+                    Text("All")
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.red)
-                .controlSize(.large)
-                .keyboardShortcut(.defaultAction)
-                .disabled(appManager.isDeleting)
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                
+                Button {
+                    for index in app.relatedFiles.indices {
+                        if app.relatedFiles[index].isSelected {
+                            appManager.toggleFileSelection(at: index)
+                        }
+                    }
+                } label: {
+                    Text("None")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
             }
-            .padding()
+            .padding(.horizontal, 4)
+            
+            VStack(spacing: 6) {
+                ForEach(Array(app.relatedFiles.enumerated()), id: \.element.id) { index, file in
+                    FileRow(file: file, isHovered: hoveredFileId == file.id)
+                        .onTapGesture {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                appManager.toggleFileSelection(at: index)
+                            }
+                        }
+                        .onHover { hovering in
+                            hoveredFileId = hovering ? file.id : nil
+                        }
+                }
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(16)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(Color.primary.opacity(0.06))
+        )
+    }
+    
+    private var footerBar: some View {
+        HStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Ready to uninstall")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                
+                Text("App + \(selectedFilesCount) related files")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            
+            Spacer()
+            
+            Button {
+                appManager.showDeleteConfirmation = true
+            } label: {
+                Label("Uninstall", systemImage: "trash.fill")
+                    .frame(minWidth: 120)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.red)
+            .controlSize(.large)
+            .keyboardShortcut(.defaultAction)
+            .disabled(appManager.isDeleting)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .background(.ultraThinMaterial)
     }
 }
 
-struct StatBox: View {
+struct StatCard: View {
+    let icon: String
     let title: String
     let value: String
-    let icon: String
-    var accent: Bool = false
+    let color: Color
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.callout)
-                    .foregroundStyle(accent ? Color.accentColor : .secondary)
-                
+                    .font(.caption)
+                    .foregroundStyle(color)
                 Text(title)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -211,43 +255,45 @@ struct StatBox: View {
             Text(value)
                 .font(.title3)
                 .fontWeight(.semibold)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(.ultraThinMaterial)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(Color.secondary.opacity(0.12))
-        )
+        .padding(12)
+        .background(color.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 
-struct RelatedFileRow: View {
+struct FileRow: View {
     let file: RelatedFile
     let isHovered: Bool
     
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: file.isSelected ? "checkmark.circle.fill" : "circle")
-                .font(.title3)
-                .foregroundStyle(file.isSelected ? .blue : .secondary)
+            ZStack {
+                Circle()
+                    .fill(file.isSelected ? Color.accentColor : Color.secondary.opacity(0.15))
+                    .frame(width: 24, height: 24)
+                
+                Image(systemName: file.isSelected ? "checkmark" : "")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.white)
+            }
             
             Image(systemName: file.type.icon)
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .frame(width: 20)
+                .font(.title3)
+                .foregroundStyle(iconColor)
+                .frame(width: 28)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(file.path.lastPathComponent)
-                    .font(.body)
+                    .font(.callout)
+                    .fontWeight(.medium)
                     .lineLimit(1)
                 
                 Text(file.displayPath)
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundStyle(.tertiary)
                     .lineLimit(1)
             }
@@ -256,27 +302,39 @@ struct RelatedFileRow: View {
             
             Text(file.type.rawValue)
                 .font(.caption2)
+                .fontWeight(.medium)
                 .padding(.horizontal, 8)
-                .padding(.vertical, 3)
-                .background(Color.secondary.opacity(0.12))
+                .padding(.vertical, 4)
+                .background(Color.secondary.opacity(0.1))
                 .clipShape(Capsule())
             
             Text(file.formattedSize)
-                .font(.caption)
+                .font(.callout)
+                .fontWeight(.medium)
                 .foregroundStyle(.secondary)
-                .frame(width: 70, alignment: .trailing)
+                .frame(minWidth: 60, alignment: .trailing)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(isHovered ? Color.secondary.opacity(0.08) : (file.isSelected ? Color.accentColor.opacity(0.06) : Color.clear))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(Color.secondary.opacity(isHovered ? 0.2 : 0.08))
+                .fill(isHovered ? Color.accentColor.opacity(0.08) : Color.clear)
         )
         .contentShape(Rectangle())
+    }
+    
+    private var iconColor: Color {
+        switch file.type {
+        case .preferences: return .blue
+        case .cache: return .orange
+        case .applicationSupport: return .purple
+        case .logs: return .green
+        case .containers: return .pink
+        case .savedState: return .teal
+        case .cookies: return .brown
+        case .crashReports: return .red
+        case .other: return .gray
+        }
     }
 }
 
@@ -290,5 +348,5 @@ struct RelatedFileRow: View {
         relatedFiles: []
     ))
     .environmentObject(AppManager())
-    .frame(width: 500, height: 600)
+    .frame(width: 550, height: 650)
 }

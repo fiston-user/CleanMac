@@ -184,7 +184,7 @@ struct SystemJunkView: View {
                     )
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 8)
             .padding(.vertical, 8)
         }
     }
