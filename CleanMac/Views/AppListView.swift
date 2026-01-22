@@ -5,74 +5,40 @@ struct AppListView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            VStack(spacing: 12) {
-                HStack {
-                    Image(systemName: "sparkles")
-                        .font(.title2)
-                        .foregroundStyle(.blue)
-                    
-                    Text("CleanMac")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                    
-                    Spacer()
-                    
-                    Menu {
-                        ForEach(SortOption.allCases, id: \.self) { option in
-                            Button {
-                                appManager.sortOption = option
-                            } label: {
-                                Label(option.rawValue, systemImage: option.icon)
-                            }
-                        }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: appManager.sortOption.icon)
-                            Image(systemName: "chevron.down")
-                                .font(.caption2)
-                        }
-                    }
-                    .menuStyle(.borderlessButton)
-                    .fixedSize()
-                    .foregroundStyle(.secondary)
-                    
-                    Button {
-                        Task {
-                            await appManager.loadInstalledApps()
-                        }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.body)
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.secondary)
-                }
-                
-                // Search
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundStyle(.secondary)
-                    
-                    TextField("Search apps...", text: $appManager.searchText)
-                        .textFieldStyle(.plain)
-                }
-                .padding(8)
-                .background(.quaternary.opacity(0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-            .padding()
-            
-            Divider()
-            
-            // App List
             if appManager.isLoading {
                 AppLoadingView()
             } else {
-                ScrollView {
-                    LazyVStack(spacing: 2) {
+                List {
+                    if appManager.filteredApps.isEmpty {
+                        Group {
+                            if #available(macOS 14.0, *) {
+                                ContentUnavailableView("No Apps Found", systemImage: "magnifyingglass", description: Text("Try a different search."))
+                            } else {
+                                VStack(spacing: 8) {
+                                    Image(systemName: "magnifyingglass")
+                                        .font(.system(size: 36))
+                                        .foregroundStyle(.secondary)
+                                    Text("No Apps Found")
+                                        .font(.headline)
+                                    Text("Try a different search.")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .padding(.vertical, 24)
+                            }
+                        }
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                    } else {
                         ForEach(appManager.filteredApps) { app in
                             AppRowView(app: app, isSelected: appManager.selectedApp?.id == app.id)
+                                .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(appManager.selectedApp?.id == app.id ? Color.accentColor.opacity(0.12) : Color.clear)
+                                )
                                 .onTapGesture {
                                     withAnimation(.easeInOut(duration: 0.15)) {
                                         appManager.selectApp(app)
@@ -80,8 +46,9 @@ struct AppListView: View {
                                 }
                         }
                     }
-                    .padding(.vertical, 4)
                 }
+                .listStyle(.sidebar)
+                .scrollContentBackground(.hidden)
             }
             
             Divider()
@@ -102,7 +69,7 @@ struct AppListView: View {
             .padding(.horizontal)
             .padding(.vertical, 10)
         }
-        .background(VisualEffectBlur(material: .sidebar, blendingMode: .behindWindow))
+        .searchable(text: $appManager.searchText, placement: .sidebar, prompt: "Search apps")
     }
 }
 
@@ -120,7 +87,7 @@ struct AppRowView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(app.name)
                     .font(.body)
-                    .fontWeight(.medium)
+                    .fontWeight(isSelected ? .semibold : .medium)
                     .lineLimit(1)
                 
                 Text(app.formattedTotalSize)
@@ -136,22 +103,11 @@ struct AppRowView: View {
                     .fontWeight(.medium)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
-                    .background(.blue.opacity(0.15))
-                    .foregroundStyle(.blue)
+                    .background(.quaternary.opacity(0.6))
+                    .foregroundStyle(.secondary)
                     .clipShape(Capsule())
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(isSelected ? Color.accentColor.opacity(0.15) : Color.clear)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .strokeBorder(isSelected ? Color.accentColor.opacity(0.3) : Color.clear, lineWidth: 1)
-        )
-        .padding(.horizontal, 8)
         .contentShape(Rectangle())
     }
 }

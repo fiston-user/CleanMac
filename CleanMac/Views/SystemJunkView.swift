@@ -47,38 +47,35 @@ struct SystemJunkView: View {
     private var headerView: some View {
         VStack(spacing: 12) {
             HStack {
-                Image(systemName: "trash.fill")
-                    .font(.title2)
-                    .foregroundStyle(.orange)
-                
-                Text("System Junk")
+                Label("System Junk", systemImage: "trash.fill")
                     .font(.title2)
                     .fontWeight(.semibold)
+                    .foregroundStyle(.orange)
                 
                 Spacer()
             }
             
             if !junkCleaner.categories.isEmpty && !junkCleaner.isScanning {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Total Junk Found")
+                GroupBox {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Total Junk Found")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text(junkCleaner.formattedTotalSize)
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.orange)
+                        }
+                        
+                        Spacer()
+                        
+                        Text("\(junkCleaner.categories.count) categories")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                        Text(junkCleaner.formattedTotalSize)
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.orange)
                     }
-                    
-                    Spacer()
-                    
-                    Text("\(junkCleaner.categories.count) categories")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    .padding(.vertical, 4)
                 }
-                .padding()
-                .background(.quaternary.opacity(0.3))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
             }
         }
         .padding()
@@ -94,23 +91,28 @@ struct SystemJunkView: View {
     }
     
     private var emptyStateView: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            Image(systemName: "sparkles")
-                .font(.system(size: 48))
-                .foregroundStyle(.green)
-            
-            Text("No Junk Found")
-                .font(.title3)
-                .fontWeight(.medium)
-            
-            Text("Click Scan to search for system junk files")
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-            Spacer()
+        Group {
+            if #available(macOS 14.0, *) {
+                ContentUnavailableView("No Junk Found", systemImage: "sparkles", description: Text("Click Scan to search for system junk files."))
+            } else {
+                VStack(spacing: 16) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 48))
+                        .foregroundStyle(.green)
+                    
+                    Text("No Junk Found")
+                        .font(.title3)
+                        .fontWeight(.medium)
+                    
+                    Text("Click Scan to search for system junk files")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.vertical, 24)
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private var categoryListView: some View {

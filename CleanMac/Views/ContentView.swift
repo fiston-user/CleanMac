@@ -18,17 +18,46 @@ struct ContentView: View {
     @State private var currentMode: AppMode = .apps
     
     var body: some View {
-        ZStack {
-            VisualEffectBlur(material: .sidebar, blendingMode: .behindWindow)
-                .ignoresSafeArea()
+        NavigationSplitView {
+            sidebarView
+                .navigationSplitViewColumnWidth(min: 260, ideal: 300, max: 360)
+        } detail: {
+            detailView
+        }
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Picker("Mode", selection: $currentMode) {
+                    ForEach(AppMode.allCases, id: \.self) { mode in
+                        Label(mode.rawValue, systemImage: mode.icon)
+                            .tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 240)
+            }
             
-            HStack(spacing: 0) {
-                sidebarView
-                    .frame(width: 300)
-                
-                Divider()
-                
-                detailView
+            ToolbarItemGroup(placement: .primaryAction) {
+                if currentMode == .apps {
+                    Menu {
+                        ForEach(SortOption.allCases, id: \.self) { option in
+                            Button {
+                                appManager.sortOption = option
+                            } label: {
+                                Label(option.rawValue, systemImage: option.icon)
+                            }
+                        }
+                    } label: {
+                        Label("Sort", systemImage: appManager.sortOption.icon)
+                    }
+                    
+                    Button {
+                        Task {
+                            await appManager.loadInstalledApps()
+                        }
+                    } label: {
+                        Label("Refresh", systemImage: "arrow.clockwise")
+                    }
+                }
             }
         }
         .alert("Delete \(appManager.selectedApp?.name ?? "App")?", isPresented: $appManager.showDeleteConfirmation) {
@@ -70,12 +99,7 @@ struct ContentView: View {
     }
     
     private var sidebarView: some View {
-        VStack(spacing: 0) {
-            modeSwitcher
-                .padding()
-            
-            Divider()
-            
+        Group {
             switch currentMode {
             case .apps:
                 AppListView()
@@ -86,47 +110,20 @@ struct ContentView: View {
         .background(VisualEffectBlur(material: .sidebar, blendingMode: .behindWindow))
     }
     
-    private var modeSwitcher: some View {
-        HStack(spacing: 4) {
-            ForEach(AppMode.allCases, id: \.self) { mode in
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        currentMode = mode
-                    }
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: mode.icon)
-                            .font(.caption)
-                        Text(mode.rawValue)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .frame(maxWidth: .infinity)
-                    .background(currentMode == mode ? Color.accentColor.opacity(0.15) : Color.clear)
-                    .foregroundStyle(currentMode == mode ? .primary : .secondary)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(4)
-        .background(.quaternary.opacity(0.5))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-    }
-    
     @ViewBuilder
     private var detailView: some View {
         switch currentMode {
         case .apps:
             if let app = appManager.selectedApp {
                 AppDetailView(app: app)
+                    .background(VisualEffectBlur(material: .contentBackground, blendingMode: .behindWindow))
             } else {
                 EmptyStateView()
+                    .background(VisualEffectBlur(material: .contentBackground, blendingMode: .behindWindow))
             }
         case .systemJunk:
             SystemJunkView(junkCleaner: junkCleaner)
+                .background(VisualEffectBlur(material: .contentBackground, blendingMode: .behindWindow))
         }
     }
 }
@@ -165,37 +162,36 @@ struct SystemJunkSidebarView: View {
                     Spacer()
                 }
             } else if junkCleaner.categories.isEmpty {
-                VStack(spacing: 16) {
-                    Spacer()
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 40))
-                        .foregroundStyle(.secondary)
-                    
-                    Text("Click Scan to find junk")
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-                    
-                    Button {
-                        Task {
-                            await junkCleaner.scan()
+                Group {
+                    if #available(macOS 14.0, *) {
+                        ContentUnavailableView("No Scan Results", systemImage: "magnifyingglass", description: Text("Run a scan to find system junk files."))
+                    } else {
+                        VStack(spacing: 8) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 36))
+                                .foregroundStyle(.secondary)
+                            Text("No Scan Results")
+                                .font(.headline)
+                            Text("Run a scan to find system junk files.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
-                    } label: {
-                        Text("Scan Now")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .padding(.vertical, 24)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.orange)
-                    
-                    Spacer()
                 }
             } else {
-                ScrollView {
-                    LazyVStack(spacing: 2) {
-                        ForEach(junkCleaner.categories) { category in
-                            JunkCategorySummaryRow(category: category)
-                        }
-                    }
-                    .padding(.vertical, 4)
+                List(junkCleaner.categories) { category in
+                    JunkCategorySummaryRow(category: category)
+                        .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.clear)
+                        )
                 }
+                .listStyle(.sidebar)
+                .scrollContentBackground(.hidden)
             }
             
             Divider()

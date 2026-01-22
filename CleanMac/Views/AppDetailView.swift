@@ -48,13 +48,13 @@ struct AppDetailView: View {
                         .font(.title)
                         .fontWeight(.semibold)
                     
-                    Text(app.bundleIdentifier)
+                    Label(app.bundleIdentifier, systemImage: "app.badge")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
                 
                 // Size Stats
-                HStack(spacing: 24) {
+                HStack(spacing: 16) {
                     StatBox(title: "App Size", value: app.formattedSize, icon: "app.fill")
                     StatBox(title: "Related Files", value: ByteCountFormatter.string(fromByteCount: selectedFilesSize, countStyle: .file), icon: "doc.fill")
                     StatBox(title: "Total", value: ByteCountFormatter.string(fromByteCount: app.size + selectedFilesSize, countStyle: .file), icon: "chart.pie.fill", accent: true)
@@ -64,7 +64,7 @@ struct AppDetailView: View {
             .frame(maxWidth: .infinity)
             .background(
                 LinearGradient(
-                    colors: [.clear, Color.accentColor.opacity(0.03)],
+                    colors: [.clear, Color.accentColor.opacity(0.05)],
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -88,9 +88,8 @@ struct AppDetailView: View {
                                 }
                             }
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.link)
                         .font(.caption)
-                        .foregroundStyle(.blue)
                         
                         Text("•")
                             .foregroundStyle(.secondary)
@@ -102,9 +101,8 @@ struct AppDetailView: View {
                                 }
                             }
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.link)
                         .font(.caption)
-                        .foregroundStyle(.blue)
                     }
                 }
                 .padding(.horizontal)
@@ -190,25 +188,25 @@ struct StatBox: View {
     var accent: Bool = false
     
     var body: some View {
-        VStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(accent ? .blue : .secondary)
-            
-            Text(value)
-                .font(.headline)
-                .fontWeight(.semibold)
-            
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        GroupBox {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundStyle(accent ? Color.accentColor : .secondary)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(value)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    
+                    Text(title)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.vertical, 2)
         }
-        .frame(width: 100)
-        .padding(.vertical, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(.quaternary.opacity(0.3))
-        )
+        .frame(width: 150)
     }
 }
 
@@ -256,7 +254,7 @@ struct RelatedFileRow: View {
         .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(isHovered ? Color.secondary.opacity(0.1) : (file.isSelected ? Color.blue.opacity(0.05) : Color.clear))
+                .fill(isHovered ? Color.secondary.opacity(0.08) : (file.isSelected ? Color.accentColor.opacity(0.06) : Color.clear))
         )
         .contentShape(Rectangle())
     }
