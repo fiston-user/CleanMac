@@ -26,14 +26,7 @@ struct ContentView: View {
         }
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Picker("Mode", selection: $currentMode) {
-                    ForEach(AppMode.allCases, id: \.self) { mode in
-                        Label(mode.rawValue, systemImage: mode.icon)
-                            .tag(mode)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .frame(width: 240)
+                ModeSwitcher(currentMode: $currentMode)
             }
             
             ToolbarItemGroup(placement: .primaryAction) {
@@ -292,6 +285,53 @@ struct EmptyStateView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+struct ModeSwitcher: View {
+    @Binding var currentMode: AppMode
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(AppMode.allCases, id: \.self) { mode in
+                ModeButton(mode: mode, isSelected: currentMode == mode) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        currentMode = mode
+                    }
+                }
+            }
+        }
+        .padding(3)
+        .background(
+            Capsule()
+                .fill(Color.secondary.opacity(0.12))
+        )
+    }
+}
+
+struct ModeButton: View {
+    let mode: AppMode
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: mode.icon)
+                    .font(.system(size: 12, weight: .medium))
+                Text(mode.rawValue)
+                    .font(.system(size: 12, weight: .medium))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 6)
+            .background(
+                Capsule()
+                    .fill(isSelected ? Color(NSColor.controlBackgroundColor) : Color.clear)
+                    .shadow(color: isSelected ? Color.black.opacity(0.1) : .clear, radius: 2, y: 1)
+            )
+            .foregroundStyle(isSelected ? .primary : .secondary)
+        }
+        .buttonStyle(.plain)
     }
 }
 
