@@ -158,6 +158,7 @@ struct SystemJunkView: View {
                 .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
+            .controlSize(.large)
             .disabled(junkCleaner.isScanning || junkCleaner.isCleaning)
             
             Button {
@@ -176,6 +177,7 @@ struct SystemJunkView: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(.orange)
+            .controlSize(.large)
             .disabled(junkCleaner.categories.isEmpty || junkCleaner.isScanning || junkCleaner.isCleaning || junkCleaner.totalSelectedSize == 0)
         }
         .padding()
@@ -203,7 +205,7 @@ struct CategoryRowView: View {
                 
                 Image(systemName: category.icon)
                     .font(.title3)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.orange)
                     .frame(width: 24)
                 
                 VStack(alignment: .leading, spacing: 2) {
@@ -264,8 +266,14 @@ struct CategoryRowView: View {
                 }
             }
         }
-        .background(.quaternary.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(Color.secondary.opacity(0.1))
+        )
     }
 }
 
@@ -286,7 +294,7 @@ struct JunkItemRowView: View {
             .padding(.leading, 36)
             
             Image(systemName: "doc.fill")
-                .font(.body)
+                .font(.callout)
                 .foregroundStyle(.secondary)
             
             Text(item.name)

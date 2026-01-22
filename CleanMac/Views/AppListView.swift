@@ -33,11 +33,12 @@ struct AppListView: View {
                     } else {
                         ForEach(appManager.filteredApps) { app in
                             AppRowView(app: app, isSelected: appManager.selectedApp?.id == app.id)
-                                .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
+                                .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
                                 .listRowSeparator(.hidden)
                                 .listRowBackground(
-                                    RoundedRectangle(cornerRadius: 8)
+                                    RoundedRectangle(cornerRadius: 10)
                                         .fill(appManager.selectedApp?.id == app.id ? Color.accentColor.opacity(0.12) : Color.clear)
+                                        .padding(.horizontal, 8)
                                 )
                                 .onTapGesture {
                                     withAnimation(.easeInOut(duration: 0.15)) {
@@ -70,6 +71,7 @@ struct AppListView: View {
             .padding(.vertical, 10)
         }
         .searchable(text: $appManager.searchText, placement: .sidebar, prompt: "Search apps")
+        .navigationTitle("CleanMac")
     }
 }
 

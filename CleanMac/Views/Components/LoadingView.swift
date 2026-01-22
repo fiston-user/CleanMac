@@ -3,7 +3,6 @@ import SwiftUI
 struct LoadingView: View {
     let title: String
     let subtitle: String?
-    @State private var isAnimating = false
     
     init(_ title: String, subtitle: String? = nil) {
         self.title = title
@@ -11,31 +10,13 @@ struct LoadingView: View {
     }
     
     var body: some View {
-        VStack(spacing: 20) {
-            ZStack {
-                Circle()
-                    .stroke(Color.secondary.opacity(0.2), lineWidth: 4)
-                    .frame(width: 50, height: 50)
-                
-                Circle()
-                    .trim(from: 0, to: 0.7)
-                    .stroke(
-                        LinearGradient(
-                            colors: [.blue, .blue.opacity(0.3)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ),
-                        style: StrokeStyle(lineWidth: 4, lineCap: .round)
-                    )
-                    .frame(width: 50, height: 50)
-                    .rotationEffect(.degrees(isAnimating ? 360 : 0))
-                    .animation(.linear(duration: 1).repeatForever(autoreverses: false), value: isAnimating)
-            }
+        VStack(spacing: 16) {
+            ProgressView()
+                .controlSize(.large)
             
-            VStack(spacing: 6) {
+            VStack(spacing: 4) {
                 Text(title)
                     .font(.headline)
-                    .foregroundStyle(.primary)
                 
                 if let subtitle {
                     Text(subtitle)
@@ -43,9 +24,6 @@ struct LoadingView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-        }
-        .onAppear {
-            isAnimating = true
         }
     }
 }
@@ -75,12 +53,12 @@ struct SkeletonRow: View {
     var body: some View {
         HStack(spacing: 12) {
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color.secondary.opacity(0.15))
+                .fill(Color.secondary.opacity(0.12))
                 .frame(width: 36, height: 36)
             
             VStack(alignment: .leading, spacing: 6) {
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.secondary.opacity(0.15))
+                    .fill(Color.secondary.opacity(0.12))
                     .frame(width: 120, height: 12)
                 
                 RoundedRectangle(cornerRadius: 4)
@@ -94,7 +72,7 @@ struct SkeletonRow: View {
         .padding(.vertical, 8)
         .overlay(
             LinearGradient(
-                colors: [.clear, .white.opacity(0.1), .clear],
+                colors: [.clear, .white.opacity(0.15), .clear],
                 startPoint: .leading,
                 endPoint: .trailing
             )
@@ -113,21 +91,21 @@ struct AppLoadingView: View {
     var body: some View {
         VStack(spacing: 0) {
             VStack(spacing: 16) {
-                LoadingView("Loading Applications", subtitle: "Scanning your Mac...")
+                LoadingView("Loading Applications", subtitle: "Scanning your Mac…")
             }
             .frame(height: 150)
             
             Divider()
                 .padding(.horizontal)
             
-            ScrollView {
-                VStack(spacing: 2) {
-                    ForEach(0..<8, id: \.self) { _ in
-                        SkeletonRow()
-                    }
-                }
-                .padding(.vertical, 8)
+            List(0..<8, id: \.self) { _ in
+                SkeletonRow()
+                    .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -135,55 +113,15 @@ struct AppLoadingView: View {
 
 struct ScanningView: View {
     let message: String
-    @State private var dots = ""
     
     var body: some View {
-        VStack(spacing: 24) {
-            ZStack {
-                ForEach(0..<3, id: \.self) { index in
-                    Circle()
-                        .stroke(Color.blue.opacity(0.3), lineWidth: 2)
-                        .frame(width: CGFloat(60 + index * 30), height: CGFloat(60 + index * 30))
-                        .scaleEffect(animationScale(for: index))
-                        .opacity(animationOpacity(for: index))
-                        .animation(
-                            .easeInOut(duration: 1.5)
-                            .repeatForever(autoreverses: false)
-                            .delay(Double(index) * 0.3),
-                            value: dots
-                        )
-                }
-                
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 28))
-                    .foregroundStyle(.blue)
-            }
-            .frame(width: 120, height: 120)
+        VStack(spacing: 16) {
+            ProgressView()
+                .controlSize(.large)
             
-            Text(message + dots)
+            Text(message)
                 .font(.headline)
                 .foregroundStyle(.primary)
-        }
-        .onAppear {
-            startDotAnimation()
-        }
-    }
-    
-    private func animationScale(for index: Int) -> CGFloat {
-        dots.isEmpty ? 1.0 : 1.2
-    }
-    
-    private func animationOpacity(for index: Int) -> Double {
-        dots.isEmpty ? 0.8 : 0.0
-    }
-    
-    private func startDotAnimation() {
-        Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { timer in
-            if dots.count >= 3 {
-                dots = ""
-            } else {
-                dots += "."
-            }
         }
     }
 }
@@ -215,7 +153,7 @@ struct CleaningProgressView: View {
                 
                 Image(systemName: "trash")
                     .font(.system(size: 24))
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(.secondary)
             }
             
             VStack(spacing: 6) {

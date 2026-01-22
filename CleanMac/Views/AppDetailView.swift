@@ -37,34 +37,40 @@ struct AppDetailView: View {
         VStack(spacing: 0) {
             // App Header
             VStack(spacing: 16) {
-                Image(nsImage: app.icon)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 96, height: 96)
-                    .shadow(color: .black.opacity(0.1), radius: 10, y: 5)
-                
-                VStack(spacing: 4) {
-                    Text(app.name)
-                        .font(.title)
-                        .fontWeight(.semibold)
+                HStack(spacing: 16) {
+                    Image(nsImage: app.icon)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 88, height: 88)
+                        .shadow(color: .black.opacity(0.08), radius: 10, y: 5)
                     
-                    Label(app.bundleIdentifier, systemImage: "app.badge")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(app.name)
+                            .font(.title)
+                            .fontWeight(.semibold)
+                        
+                        Label(app.bundleIdentifier, systemImage: "app.badge")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                    Spacer()
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 
                 // Size Stats
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     StatBox(title: "App Size", value: app.formattedSize, icon: "app.fill")
                     StatBox(title: "Related Files", value: ByteCountFormatter.string(fromByteCount: selectedFilesSize, countStyle: .file), icon: "doc.fill")
                     StatBox(title: "Total", value: ByteCountFormatter.string(fromByteCount: app.size + selectedFilesSize, countStyle: .file), icon: "chart.pie.fill", accent: true)
                 }
             }
-            .padding(.vertical, 24)
+            .padding(.vertical, 20)
+            .padding(.horizontal, 20)
             .frame(maxWidth: .infinity)
             .background(
                 LinearGradient(
-                    colors: [.clear, Color.accentColor.opacity(0.05)],
+                    colors: [.clear, Color.accentColor.opacity(0.06)],
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -76,7 +82,8 @@ struct AppDetailView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text("Related Files")
-                        .font(.headline)
+                        .font(.title3)
+                        .fontWeight(.semibold)
                     
                     Spacer()
                     
@@ -119,23 +126,24 @@ struct AppDetailView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    ScrollView {
-                        LazyVStack(spacing: 4) {
-                            ForEach(Array(app.relatedFiles.enumerated()), id: \.element.id) { index, file in
-                                RelatedFileRow(file: file, isHovered: hoveredFileId == file.id)
-                                    .onTapGesture {
-                                        withAnimation(.easeInOut(duration: 0.1)) {
-                                            appManager.toggleFileSelection(at: index)
-                                        }
+                    List {
+                        ForEach(Array(app.relatedFiles.enumerated()), id: \.element.id) { index, file in
+                            RelatedFileRow(file: file, isHovered: hoveredFileId == file.id)
+                                .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
+                                .onTapGesture {
+                                    withAnimation(.easeInOut(duration: 0.1)) {
+                                        appManager.toggleFileSelection(at: index)
                                     }
-                                    .onHover { hovering in
-                                        hoveredFileId = hovering ? file.id : nil
-                                    }
-                            }
+                                }
+                                .onHover { hovering in
+                                    hoveredFileId = hovering ? file.id : nil
+                                }
                         }
-                        .padding(.horizontal)
-                        .padding(.bottom, 16)
                     }
+                    .listStyle(.inset)
+                    .scrollContentBackground(.hidden)
                 }
             }
             
@@ -188,25 +196,32 @@ struct StatBox: View {
     var accent: Bool = false
     
     var body: some View {
-        GroupBox {
-            HStack(spacing: 10) {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
                 Image(systemName: icon)
-                    .font(.title3)
+                    .font(.callout)
                     .foregroundStyle(accent ? Color.accentColor : .secondary)
                 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(value)
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                    
-                    Text(title)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-            .padding(.vertical, 2)
+            
+            Text(value)
+                .font(.title3)
+                .fontWeight(.semibold)
         }
-        .frame(width: 150)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(Color.secondary.opacity(0.12))
+        )
     }
 }
 
@@ -248,7 +263,7 @@ struct RelatedFileRow: View {
             Text(file.formattedSize)
                 .font(.caption)
                 .foregroundStyle(.secondary)
-                .frame(width: 60, alignment: .trailing)
+                .frame(width: 70, alignment: .trailing)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

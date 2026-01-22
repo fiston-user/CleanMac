@@ -211,6 +211,7 @@ struct SystemJunkSidebarView: View {
             .padding(.horizontal)
             .padding(.vertical, 10)
         }
+        .navigationTitle("System Junk")
     }
 }
 
@@ -221,7 +222,7 @@ struct JunkCategorySummaryRow: View {
         HStack(spacing: 12) {
             Image(systemName: category.icon)
                 .font(.body)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.orange)
                 .frame(width: 24)
             
             VStack(alignment: .leading, spacing: 2) {
@@ -244,7 +245,10 @@ struct JunkCategorySummaryRow: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .padding(.horizontal, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.secondary.opacity(0.05))
+        )
     }
 }
 
@@ -268,20 +272,26 @@ struct VisualEffectBlur: NSViewRepresentable {
 
 struct EmptyStateView: View {
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "app.badge.checkmark")
-                .font(.system(size: 64))
-                .foregroundStyle(.secondary)
-            
-            Text("Select an App")
-                .font(.title2)
-                .fontWeight(.medium)
-            
-            Text("Choose an application from the list to see details and remove it completely.")
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 300)
+        Group {
+            if #available(macOS 14.0, *) {
+                ContentUnavailableView("Select an App", systemImage: "app.badge.checkmark", description: Text("Choose an application from the list to see details and remove it completely."))
+            } else {
+                VStack(spacing: 16) {
+                    Image(systemName: "app.badge.checkmark")
+                        .font(.system(size: 64))
+                        .foregroundStyle(.secondary)
+                    
+                    Text("Select an App")
+                        .font(.title2)
+                        .fontWeight(.medium)
+                    
+                    Text("Choose an application from the list to see details and remove it completely.")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 300)
+                }
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
