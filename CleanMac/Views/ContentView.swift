@@ -107,7 +107,6 @@ struct ContentView: View {
                 SystemJunkSidebarView(junkCleaner: junkCleaner)
             }
         }
-        .background(VisualEffectBlur(material: .sidebar, blendingMode: .behindWindow))
     }
     
     @ViewBuilder
@@ -116,14 +115,11 @@ struct ContentView: View {
         case .apps:
             if let app = appManager.selectedApp {
                 AppDetailView(app: app)
-                    .background(VisualEffectBlur(material: .contentBackground, blendingMode: .behindWindow))
             } else {
                 EmptyStateView()
-                    .background(VisualEffectBlur(material: .contentBackground, blendingMode: .behindWindow))
             }
         case .systemJunk:
             SystemJunkView(junkCleaner: junkCleaner)
-                .background(VisualEffectBlur(material: .contentBackground, blendingMode: .behindWindow))
         }
     }
 }

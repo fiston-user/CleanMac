@@ -23,7 +23,7 @@ struct SystemJunkView: View {
                 footerView
             }
         }
-        .background(VisualEffectBlur(material: .contentBackground, blendingMode: .behindWindow))
+
         .alert("Clean System Junk?", isPresented: $showCleanConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Move to Trash", role: .destructive) {
