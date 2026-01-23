@@ -19,6 +19,9 @@
 		A10000000000000A /* SystemJunkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000A /* SystemJunkView.swift */; };
 		A10000000000000B /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000B /* LoadingView.swift */; };
 		A10000000000000C /* FullDiskAccessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000C /* FullDiskAccessView.swift */; };
+		A10000000000000D /* SystemMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000D /* SystemMonitor.swift */; };
+		A10000000000000E /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000E /* MenuBarView.swift */; };
+		A10000000000000F /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000F /* MenuBarController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +37,9 @@
 		A20000000000000A /* SystemJunkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemJunkView.swift; sourceTree = "<group>"; };
 		A20000000000000B /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 		A20000000000000C /* FullDiskAccessView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullDiskAccessView.swift; sourceTree = "<group>"; };
+		A20000000000000D /* SystemMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMonitor.swift; sourceTree = "<group>"; };
+		A20000000000000E /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		A20000000000000F /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
 		A200000000000010 /* CleanMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CleanMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A200000000000011 /* CleanMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CleanMac.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -64,6 +70,7 @@
 				A400000000000003 /* Views */,
 				A400000000000004 /* Models */,
 				A400000000000005 /* Services */,
+				A400000000000007 /* MenuBar */,
 				A200000000000007 /* Assets.xcassets */,
 				A200000000000011 /* CleanMac.entitlements */,
 			);
@@ -78,6 +85,7 @@
 				A200000000000006 /* AppDetailView.swift */,
 				A20000000000000A /* SystemJunkView.swift */,
 				A400000000000006 /* Components */,
+				A400000000000008 /* MenuBar */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -105,8 +113,25 @@
 			children = (
 				A200000000000004 /* AppManager.swift */,
 				A200000000000009 /* JunkCleaner.swift */,
+				A20000000000000D /* SystemMonitor.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		A400000000000007 /* MenuBar */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000F /* MenuBarController.swift */,
+			);
+			path = MenuBar;
+			sourceTree = "<group>";
+		};
+		A400000000000008 /* MenuBar */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000E /* MenuBarView.swift */,
+			);
+			path = MenuBar;
 			sourceTree = "<group>";
 		};
 		A400000000000010 /* Products */ = {
@@ -197,6 +222,9 @@
 				A10000000000000A /* SystemJunkView.swift in Sources */,
 				A10000000000000B /* LoadingView.swift in Sources */,
 				A10000000000000C /* FullDiskAccessView.swift in Sources */,
+				A10000000000000D /* SystemMonitor.swift in Sources */,
+				A10000000000000E /* MenuBarView.swift in Sources */,
+				A10000000000000F /* MenuBarController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
